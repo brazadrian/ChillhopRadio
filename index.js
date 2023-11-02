@@ -4,7 +4,10 @@ const {
   createAudioPlayer,
   createAudioResource,
 } = require("@discordjs/voice");
-const { join } = require("node:path");
+const { commands } = require("./src/commands");
+const { searchLofi } = require("./src/search_lofi");
+
+require("dotenv").config();
 
 const client = new Client({
   intents: [
@@ -15,27 +18,27 @@ const client = new Client({
 });
 
 client.on("ready", () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.once("ready", () => {
-  const commands = [
-    {
-      name: "play",
-      description: "Play music in a voice channel",
-    },
-  ];
-
   client.guilds.cache.forEach((guild) => {
     guild.commands.set(commands);
   });
+  console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
+  const channel = interaction.member.voice.channel;
+  const channelId = channel.id;
+  const guildId = channel.guild.id;
+  const adapterCreator = channel.guild.voiceAdapterCreator;
+  const player = createAudioPlayer();
+  const connection = joinVoiceChannel({
+    channelId,
+    guildId,
+    adapterCreator,
+  });
+
   if (interaction.commandName === "play") {
-    const channel = interaction.member.voice.channel;
     if (!channel) {
       await interaction.reply(
         "You must be in a voice channel to use this command."
@@ -43,27 +46,74 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    const channelId = channel.id;
-    const guildId = channel.guild.id;
-    const adapterCreator = channel.guild.voiceAdapterCreator;
+    // const selectTypeLofi = interaction.options.getSubcommand();
 
-    const connection = joinVoiceChannel({
-      channelId,
-      guildId,
-      adapterCreator,
+    let music = await searchLofi().then((data) => {
+      return data[0];
     });
 
-    const resource = createAudioResource(
-      join(__dirname, "src/audios/lofi_music.mp3")
-    );
-    console.log(resource);
-    const player = createAudioPlayer();
-    player.play(resource);
+    const resource = createAudioResource(music.url);
 
     connection.subscribe(player);
+    player.play(resource);
 
-    await interaction.reply("Playing lofi music in your channel!");
+    await interaction.reply(`Playing ${music.title} in your channel!`);
+  }
+  if (interaction.commandName === "stop") {
+    if (player.state.status === "idle") {
+      await interaction.reply(
+        "Não é possível parar a música, pois nenhuma música está sendo reproduzida."
+      );
+    } else {
+      try {
+        player.stop();
+        await interaction.reply("Stopped music!");
+      } catch (error) {
+        console.error("Erro ao parar a música:", error);
+        await interaction.reply(
+          "Não foi possível parar a música devido a um erro."
+        );
+      }
+    }
+    return;
+  }
+
+  if (interaction.commandName === "pause") {
+    if (player.state.status === "idle") {
+      await interaction.reply(
+        "Não é possível pausar a música, pois nenhuma música está sendo reproduzida."
+      );
+    } else {
+      try {
+        player.pause();
+        await interaction.reply("Paused music!");
+      } catch (error) {
+        console.error("Erro ao pausar a música:", error);
+        await interaction.reply(
+          "Não foi possível pausar a música devido a um erro."
+        );
+      }
+    }
+    return;
+  }
+
+  if (interaction.commandName === "resume") {
+    if (player.state.status === "idle") {
+      await interaction.reply(
+        "Não é possível retomar a música, pois nenhuma música está sendo reproduzida."
+      );
+    } else {
+      try {
+        player.unpause();
+        await interaction.reply("Resumed music!");
+      } catch (error) {
+        console.error("Erro ao retomar a música:", error);
+        await interaction.reply(
+          "Não foi possível retomar a música devido a um erro."
+        );
+      }
+    }
+    return;
   }
 });
-
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN_AUTH);
