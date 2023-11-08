@@ -5,7 +5,7 @@ const {
   createAudioResource,
 } = require("@discordjs/voice");
 const { commands } = require("./src/commands");
-const { searchLofi } = require("./src/search_lofi");
+const { searchLofi, connectDataBase } = require("./src/search_lofi");
 
 require("dotenv").config();
 
@@ -17,7 +17,8 @@ const client = new Client({
   ],
 });
 
-client.on("ready", () => {
+client.once("ready", async () => {
+  await connectDataBase();
   client.guilds.cache.forEach((guild) => {
     guild.commands.set(commands);
   });
@@ -45,8 +46,6 @@ client.on("interactionCreate", async (interaction) => {
       );
       return;
     }
-
-    // const selectTypeLofi = interaction.options.getSubcommand();
 
     let music = await searchLofi().then((data) => {
       return data[0];
@@ -115,5 +114,21 @@ client.on("interactionCreate", async (interaction) => {
     }
     return;
   }
+
+  player.addListener("stateChange", async (_, newOne) => {
+    if (newOne.status == "idle") {
+      let music = await searchLofi().then((data) => {
+        return data[0];
+      });
+
+      const resource = createAudioResource(music.url);
+
+      connection.subscribe(player);
+      player.play(resource);
+
+      await interaction.editReply(`Playing ${music.title} in your channel!`);
+    }
+  });
 });
+
 client.login(process.env.TOKEN_AUTH);

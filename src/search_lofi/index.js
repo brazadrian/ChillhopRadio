@@ -10,31 +10,20 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
-
-async function searchLofi(type) {
+async function connectDataBase() {
   try {
     await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("connected to MongoDB!");
+  } catch (err) {
+    console.log("Error to connected MongoDB!", err);
+  }
+}
+
+async function searchLofi() {
+  try {
     const search = client.db("ChillhopRadio").collection("sounds");
-
-    // if (type === "all")
     return await search.aggregate([{ $sample: { size: 1 } }]).toArray();
-
-    // const data = await search
-    //   .aggregate([
-    //     {
-    //       $match: {
-    //         lofi_genre: type,
-    //       },
-    //     },
-    //     {
-    //       $sample: {
-    //         size: 1,
-    //       },
-    //     },
-    //   ])
-    //   .toArray();
-    // client.close();
-    // return data;
   } catch (error) {
     console.error("Erro ao buscar itens na coleção:", error);
     throw error;
@@ -42,4 +31,5 @@ async function searchLofi(type) {
 }
 module.exports = {
   searchLofi,
+  connectDataBase,
 };
