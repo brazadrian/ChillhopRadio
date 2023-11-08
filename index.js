@@ -59,60 +59,20 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply(`Playing ${music.title} in your channel!`);
   }
   if (interaction.commandName === "stop") {
-    if (player.state.status === "idle") {
-      await interaction.reply(
-        "Não é possível parar a música, pois nenhuma música está sendo reproduzida."
-      );
-    } else {
-      try {
-        player.stop();
-        await interaction.reply("Stopped music!");
-      } catch (error) {
-        console.error("Erro ao parar a música:", error);
-        await interaction.reply(
-          "Não foi possível parar a música devido a um erro."
-        );
-      }
-    }
-    return;
+    connection.destroy();
+    await interaction.reply("Stopped music!");
   }
 
   if (interaction.commandName === "pause") {
-    if (player.state.status === "idle") {
-      await interaction.reply(
-        "Não é possível pausar a música, pois nenhuma música está sendo reproduzida."
-      );
-    } else {
-      try {
-        player.pause();
-        await interaction.reply("Paused music!");
-      } catch (error) {
-        console.error("Erro ao pausar a música:", error);
-        await interaction.reply(
-          "Não foi possível pausar a música devido a um erro."
-        );
-      }
-    }
-    return;
+    // connection.state.subscription.player.state.status
+
+    connection.state.subscription.player.pause();
+    await interaction.reply("Paused music!");
   }
 
   if (interaction.commandName === "resume") {
-    if (player.state.status === "idle") {
-      await interaction.reply(
-        "Não é possível retomar a música, pois nenhuma música está sendo reproduzida."
-      );
-    } else {
-      try {
-        player.unpause();
-        await interaction.reply("Resumed music!");
-      } catch (error) {
-        console.error("Erro ao retomar a música:", error);
-        await interaction.reply(
-          "Não foi possível retomar a música devido a um erro."
-        );
-      }
-    }
-    return;
+    connection.state.subscription.player.unpause();
+    await interaction.reply("Resumed music!");
   }
 
   player.addListener("stateChange", async (_, newOne) => {
