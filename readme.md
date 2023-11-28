@@ -4,7 +4,7 @@ Este é um bot de rádio lo-fi chill-hop projetado para fins de estudo e prátic
 
 ## Comandos do Bot
 
-- `/play`: Inicia a reprodução de música a partir da URL fornecida.
+- `/play`: Inicia o bot.
 
 ## Propósito
 
