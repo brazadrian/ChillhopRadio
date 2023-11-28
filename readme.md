@@ -4,10 +4,7 @@ Este é um bot de rádio lo-fi chill-hop projetado para fins de estudo e prátic
 
 ## Comandos do Bot
 
-- `!play`: Inicia a reprodução de música a partir da URL fornecida.
-- `!pause`: Pausa a reprodução de música.
-- `!resume`: Retoma a reprodução de música.
-- `!stop`: Para a reprodução de música e desconecta o bot do canal de voz.
+- `/play`: Inicia a reprodução de música a partir da URL fornecida.
 
 ## Propósito
 

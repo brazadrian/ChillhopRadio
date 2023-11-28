@@ -51,28 +51,12 @@ client.on("interactionCreate", async (interaction) => {
       return data[0];
     });
 
-    const resource = createAudioResource(music.url);
+    const resource = createAudioResource(music.url, { inputType: "opus" });
 
     connection.subscribe(player);
     player.play(resource);
 
     await interaction.reply(`Playing ${music.title} in your channel!`);
-  }
-  if (interaction.commandName === "stop") {
-    connection.destroy();
-    await interaction.reply("Stopped music!");
-  }
-
-  if (interaction.commandName === "pause") {
-    // connection.state.subscription.player.state.status
-
-    connection.state.subscription.player.pause();
-    await interaction.reply("Paused music!");
-  }
-
-  if (interaction.commandName === "resume") {
-    connection.state.subscription.player.unpause();
-    await interaction.reply("Resumed music!");
   }
 
   player.addListener("stateChange", async (_, newOne) => {
